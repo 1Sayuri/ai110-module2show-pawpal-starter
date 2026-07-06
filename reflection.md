@@ -1,11 +1,17 @@
 # PawPal+ Project Reflection
 
 ## 1. System Design
+Core user actions:
+- entering basic owner information
+- entering basic pet information
+- adding pet care tasks
+- generate a daily care schedule/plan
 
 **a. Initial design**
 
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
+
 
 **b. Design changes**
 

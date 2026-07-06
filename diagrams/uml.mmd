@@ -1,15 +1,63 @@
 classDiagram
-    %% Replace the placeholders below with your actual classes, attributes, methods, and relationships.
-    %% Keep this file updated so it matches your final implementation.
-
-    class ClassName {
-        +type attribute
-        +method() returnType
+    class Owner {
+        -owner_id: str
+        -name: str
+        -contact: str
+        -available_time: int
+        -preferences: dict
+        -pets: list[Pet]
+        +add_pet(pet)
+        +remove_pet(pet_id)
+        +get_pets()
+        +get_pet_by_id(pet_id)
+        +display_info()
     }
 
-    class AnotherClass {
-        +type attribute
-        +method() returnType
+    class Pet {
+        -pet_id: str
+        -owner_id: str
+        -name: str
+        -species: str
+        -breed: str
+        -age: int
+        -tasks: list[Task]
+        +add_task(task)
+        +remove_task(task_id)
+        +get_tasks()
+        +display_info()
     }
 
-    ClassName --> AnotherClass : relationship
+    class Task {
+        -task_id: str
+        -pet_id: str
+        -title: str
+        -category: str
+        -duration: int
+        -priority: str
+        -recurring: bool
+        -time_preference: str
+        -notes: str
+        +get_priority_weight()
+        +display_info()
+    }
+
+    class Schedule {
+        -owner: Owner
+        -tasks: list[Task]
+        -daily_schedule: list[dict]
+        -day_start_time: str
+        -day_end_time: str
+        +generate_schedule()
+        +sort_tasks_by_priority()
+        +filter_tasks_by_duration(available_time)
+        +check_conflicts()
+        +assign_time_slots()
+        +get_schedule()
+        +explain_reasoning()
+        +display_plan()
+    }
+
+    Owner "1" --> "*" Pet : owns
+    Pet "1" --> "*" Task : has
+    Schedule --> Owner : plans for
+    Schedule --> "*" Task : orders
