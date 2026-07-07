@@ -10,7 +10,26 @@ Core user actions:
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+
+
 - What classes did you include, and what responsibilities did you assign to each?
+
+1) Owner
+Represents the person using the app.
+Stores basic owner information such as name, contact, and available time.
+Keeps track of the pets connected to that owner.
+2) Pet
+Represents one pet in the system.
+Stores details like the pet’s name, species, breed, and age.
+Holds the tasks that belong to that pet.
+3) Task
+Represents one care activity for a pet.
+Stores information such as the task name, category, duration, and priority.
+Helps the scheduler decide what matters most and how long it will take.
+4) Schedule
+Represents the daily care plan.
+Takes the tasks and organizes them into a schedule.
+Handles basic planning responsibilities such as sorting tasks by priority and preparing a daily plan.
 
 
 **b. Design changes**
