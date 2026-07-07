@@ -93,7 +93,9 @@ class Task:
         duration: int,
         priority: str = "medium",
         recurring: bool = False,
+        recurrence: Optional[str] = None,
         time_preference: Optional[str] = None,
+        time: Optional[str] = None,
         notes: str = "",
     ) -> None:
         self.task_id = task_id
@@ -103,7 +105,9 @@ class Task:
         self.duration = duration
         self.priority = priority.lower()
         self.recurring = recurring
-        self.time_preference = time_preference
+        self.recurrence = recurrence.lower() if recurrence else None
+        self.time_preference = time_preference or time
+        self.time = time or time_preference
         self.notes = notes
         self.is_complete = False
 
@@ -112,9 +116,30 @@ class Task:
         weights = {"low": 1, "medium": 2, "high": 3}
         return weights.get(self.priority, 2)
 
-    def mark_complete(self) -> None:
-        """Mark the task as completed."""
+    def mark_complete(self, pet: Optional["Pet"] = None) -> Optional["Task"]:
+        """Mark the task as completed and create a follow-up task for recurring daily/weekly items."""
         self.is_complete = True
+        if not self.recurring or self.recurrence not in {"daily", "weekly"}:
+            return None
+
+        if pet is None:
+            return None
+
+        next_task = Task(
+            task_id=f"{self.task_id}-next",
+            pet_id=self.pet_id,
+            title=self.title,
+            category=self.category,
+            duration=self.duration,
+            priority=self.priority,
+            recurring=True,
+            recurrence=self.recurrence,
+            time_preference=self.time_preference,
+            time=self.time,
+            notes=self.notes,
+        )
+        pet.add_task(next_task)
+        return next_task
 
     def display_info(self) -> str:
         """Return a short summary of the task."""
@@ -155,13 +180,69 @@ class Schedule:
         """Sort tasks from highest to lowest priority."""
         return sorted(self.tasks, key=lambda task: task.get_priority_weight(), reverse=True)
 
+    def sort_tasks_by_time(self) -> List[Task]:
+        """Sort tasks chronologically by their assigned time attribute."""
+        return sorted(self.tasks, key=self._task_time_value)
+
+    def _task_time_value(self, task: Task) -> int:
+        """Convert a task's time string into a comparable minute value."""
+        time_value = getattr(task, "time", None) or getattr(task, "time_preference", None)
+        if not time_value:
+            return 24 * 60
+        if isinstance(time_value, str):
+            try:
+                hours_text, minutes_text = time_value.split(":", 1)
+                hours = int(hours_text)
+                minutes = int(minutes_text)
+            except ValueError:
+                return 24 * 60
+            return hours * 60 + minutes
+        return int(time_value)
+
     def filter_tasks_by_duration(self, available_time: int) -> List[Task]:
         """Return tasks that fit within the available time."""
         return [task for task in self.tasks if task.duration <= available_time]
 
-    def check_conflicts(self) -> List[Task]:
-        """Return any conflicting tasks in the current schedule."""
-        return []
+    def filter_tasks(self, completed: Optional[bool] = None, pet_name: Optional[str] = None) -> List[Task]:
+        """Filter tasks by completion status and/or pet name."""
+        filtered_tasks = self.tasks
+        if completed is not None:
+            filtered_tasks = [task for task in filtered_tasks if task.is_complete is completed]
+        if pet_name is not None:
+            pet_name_lower = pet_name.lower()
+            filtered_tasks = [
+                task for task in filtered_tasks if self._task_matches_pet_name(task, pet_name_lower)
+            ]
+        return filtered_tasks
+
+    def _task_matches_pet_name(self, task: Task, pet_name_lower: str) -> bool:
+        """Return True when the task belongs to a pet with the given name."""
+        for pet in self.owner.get_pets():
+            if pet.pet_id == task.pet_id and pet.name.lower() == pet_name_lower:
+                return True
+        return False
+
+    def check_conflicts(self) -> str:
+        """Return a warning message when tasks overlap at the same time."""
+        seen: set[str] = set()
+        conflict_titles: List[str] = []
+
+        for index, task in enumerate(self.tasks):
+            task_time = self._task_time_value(task)
+            for other_task in self.tasks[index + 1 :]:
+                if other_task.task_id in seen:
+                    continue
+                if self._task_time_value(other_task) == task_time:
+                    conflict_pair = sorted({task.task_id, other_task.task_id})
+                    if conflict_pair[0] == task.task_id:
+                        conflict_titles.append(f"{task.title} and {other_task.title}")
+                    seen.add(task.task_id)
+                    seen.add(other_task.task_id)
+
+        if not conflict_titles:
+            return "No conflicts detected."
+
+        return "Warning: overlapping tasks detected at the same time: " + "; ".join(conflict_titles)
 
     def assign_time_slots(self) -> List[dict]:
         """Assign the current tasks to time slots in the schedule."""

@@ -50,7 +50,7 @@ def main() -> None:
     owner1.add_pet(cat)
     owner2.add_pet(cat1)
 
-    # Add tasks to the pets
+    # Add tasks out of order to show the sorting and filtering methods.
     walk_task = Task(
         task_id="task-001",
         pet_id=dog.pet_id,
@@ -59,7 +59,7 @@ def main() -> None:
         duration=30,
         priority="high",
         recurring=True,
-        time_preference="morning",
+        time="08:00",
     )
 
     feed_task = Task(
@@ -70,7 +70,7 @@ def main() -> None:
         duration=15,
         priority="medium",
         recurring=True,
-        time_preference="evening",
+        time="20:00",
     )
 
     grooming_task = Task(
@@ -81,22 +81,26 @@ def main() -> None:
         duration=20,
         priority="low",
         recurring=False,
+        time="10:00",
         notes="Brush more carefully around the collar area.",
     )
 
     grooming_task1 = Task(
         task_id="task-004",
         pet_id=cat1.pet_id,
-        title="trim nails",
+        title="Trim nails",
         category="grooming",
         duration=15,
         priority="low",
         recurring=False,
+        time="12:00",
         notes="Trim nails carefully to avoid cutting too short.",
     )
-    dog.add_task(walk_task)
-    cat.add_task(feed_task)
+    grooming_task1.mark_complete()
+
     dog.add_task(grooming_task)
+    cat.add_task(feed_task)
+    dog.add_task(walk_task)
     cat1.add_task(grooming_task1)
 
     # Build the schedule from all pet tasks
@@ -112,12 +116,20 @@ def main() -> None:
     print()
     print("Today's schedule:")
     print(schedule.display_plan())
+    print()
+    print("Tasks sorted by time:")
+    for task in schedule.sort_tasks_by_time():
+        print(f"- {task.title} ({task.time})")
+    print()
+    print("Pending tasks for Mochi:")
+    for task in schedule.filter_tasks(completed=False, pet_name="Mochi"):
+        print(f"- {task.title}")
 
     all_tasks = cat1.get_tasks()
     schedule = Schedule(owner=owner2, tasks=all_tasks)
     schedule.generate_schedule()
 
-
+    print()
     print(owner2.display_info())
     print("Pets:")
     for pet in owner2.get_pets():
@@ -125,6 +137,10 @@ def main() -> None:
     print()
     print("Today's schedule:")
     print(schedule.display_plan())
+    print()
+    print("Completed tasks for Michi:")
+    for task in schedule.filter_tasks(completed=True, pet_name="Michi"):
+        print(f"- {task.title}")
 
 if __name__ == "__main__":
     main()

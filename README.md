@@ -84,14 +84,14 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+The scheduler now includes a small set of practical behaviors that make the pet-care plan more useful for a busy owner.
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Sorting behavior | `Schedule.sort_tasks_by_time()` | Orders tasks chronologically by their assigned time value so the plan reads from morning to evening. |
+| Filtering behavior | `Schedule.filter_tasks()` | Filters tasks by completion status and/or pet name, which helps the owner focus on pending or pet-specific tasks. |
+| Conflict detection logic | `Schedule.check_conflicts()` | Returns a warning message when two tasks overlap at the same time instead of crashing the app. |
+| Recurring task logic | `Task.mark_complete()` | When a recurring daily or weekly task is completed, a new follow-up task instance is automatically created for the next occurrence. |
 
 ## 📸 Demo Walkthrough
 
