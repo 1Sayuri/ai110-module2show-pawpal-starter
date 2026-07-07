@@ -42,7 +42,7 @@ def test_adding_task_increases_pet_task_count():
     assert len(pet.get_tasks()) == initial_count + 1
 
 
-def test_schedule_can_sort_tasks_by_time_attribute():
+def test_sorting_correctness_returns_tasks_in_chronological_order():
     owner = Owner(owner_id="owner-1", name="Jordan", available_time=120)
     morning_task = Task(
         task_id="task-1",
@@ -102,7 +102,7 @@ def test_schedule_can_filter_tasks_by_completion_and_pet_name():
     assert [task.title for task in filtered_tasks] == ["Morning walk"]
 
 
-def test_recurring_daily_task_creates_follow_up_when_completed():
+def test_recurrence_logic_creates_new_task_for_following_day():
     pet = Pet(pet_id="pet-1", owner_id="owner-1", name="Mochi", species="dog")
     task = Task(
         task_id="task-1",
@@ -126,7 +126,7 @@ def test_recurring_daily_task_creates_follow_up_when_completed():
     assert len(pet.get_tasks()) == 2
 
 
-def test_schedule_detects_conflicting_tasks_for_same_or_different_pets():
+def test_conflict_detection_flags_duplicate_times():
     owner = Owner(owner_id="owner-1", name="Jordan", available_time=120)
     mochi = Pet(pet_id="pet-1", owner_id=owner.owner_id, name="Mochi", species="dog")
     luna = Pet(pet_id="pet-2", owner_id=owner.owner_id, name="Luna", species="cat")
